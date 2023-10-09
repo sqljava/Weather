@@ -92,7 +92,7 @@ class MainFragment : Fragment() {
 
                         }
 
-                        val obj = Hour(icon, temp, text, o)
+                        val obj = Hour("https:"+icon, temp, text, o)
 
                         hourList.add(obj)
 
@@ -107,11 +107,9 @@ class MainFragment : Fragment() {
 
 
                     binding.currentTemp.text = curTemp?.roundToInt().toString()+"℃"
-                    binding.mainIcon.load(icon)
+                    binding.mainIcon.load("http:"+icon)
                     binding.wind.text = binding.wind.text.toString()+wind.toString()+" km/h"
                     binding.currentCondition.text = conditionText
-
-                    //Log.d("MyTag", "$days")
 
                 }
 

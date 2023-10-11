@@ -11,7 +11,7 @@
 
     <stroke
         android:color="#DFDFDF"
-        android:width="7dp"/>
+        android:width="3dp"/>
 
     <gradient android:startColor="#4A91FF"
         android:endColor="#47BFDF"

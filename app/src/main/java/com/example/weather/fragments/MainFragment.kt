@@ -8,13 +8,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import coil.load
-import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.weather.Day
 import com.example.weather.Hour
-import com.example.weather.R
+import com.example.weather.adapters.DayAdapter
 import com.example.weather.adapters.HourAdapter
 import com.example.weather.databinding.FragmentMainBinding
 import org.json.JSONObject
@@ -35,9 +35,12 @@ class MainFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
     private lateinit var binding: FragmentMainBinding
-    private lateinit var adapter : HourAdapter
+    private lateinit var adapterHour : HourAdapter
+    private lateinit var adapterDay : DayAdapter
+    lateinit var DAYS : JSONObject
     val url = "http://api.weatherapi.com/v1/forecast.json?key=6c4cc4b3e43340098a883250230810&q=Tashkent&days=5&aqi=no&alerts=no"
     val hourList = mutableListOf<Hour>()
+    val dayList = mutableListOf<Day>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,9 +57,16 @@ class MainFragment : Fragment() {
     ): View? {
         binding = FragmentMainBinding.inflate(inflater, container, false)
 
-        adapter = HourAdapter(hourList)
+        adapterHour = HourAdapter(hourList)
+        adapterDay = DayAdapter(dayList, object : DayAdapter.DayClick{
+            override fun onClick(position: Int) {
 
-        binding.recHours.adapter = adapter
+            }
+
+        })
+
+        binding.recHours.adapter = adapterHour
+        binding.recDays.adapter = adapterDay
 
         val requestQueue = Volley.newRequestQueue(requireContext())
 
@@ -64,7 +74,6 @@ class MainFragment : Fragment() {
             object : Response.Listener<JSONObject>{
                 @SuppressLint("SetTextI18n")
                 override fun onResponse(response: JSONObject?) {
-                    getFromAPI(response)
 
                     val current = response?.getJSONObject("current")
                     val curTemp = current?.getDouble("temp_c")
@@ -77,29 +86,31 @@ class MainFragment : Fragment() {
 
                     val thisDay = days.getJSONObject(0)
 
-                    val hours = thisDay.getJSONArray("hour")
+                    changeHours(thisDay)
 
-                    for (i in 0 until hours.length()){
-                        val hour = hours.getJSONObject(i)
-                        val time = hour.getString("time")
-                        val temp = hour.getDouble("temp_c")
-                        val condition = hour.getJSONObject("condition")
-                        val text = condition.getString("text")
-                        val icon = condition.getString("icon")
-                        var o = ""
-                        for (a in 11..15){
-                            o+=time.toCharArray()[a]
 
-                        }
 
-                        val obj = Hour("https:"+icon, temp, text, o)
+                    for (d in 0 until days.length()){
+                        val day = days.getJSONObject(d)
+                        val date = day.getString("date")
+                        val info = day.getJSONObject("day")
+                        val avgtemp = info.getDouble("avgtemp_c")
+                        val condit = info.getJSONObject("condition")
+                        val conText = condit.getString("text")
+                        val iconDay = "https:"+condit.getString("icon")
 
-                        hourList.add(obj)
+                        Log.d("MyTag", "$avgtemp")
 
-                        adapter.notifyDataSetChanged()
 
+                        val obj = Day(date, avgtemp, iconDay, conText)
+
+                        dayList.add(obj)
+
+                        adapterDay.notifyDataSetChanged()
 
                     }
+
+
 
 
 
@@ -131,7 +142,27 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
-    fun getFromAPI(response: JSONObject?){
+    fun changeHours(thisDay: JSONObject){
+        val hours = thisDay.getJSONArray("hour")
+
+        for (i in 0 until hours.length()){
+            val hour = hours.getJSONObject(i)
+            val time = hour.getString("time")
+            val temp = hour.getDouble("temp_c")
+            val condition = hour.getJSONObject("condition")
+            val text = condition.getString("text")
+            val icon = condition.getString("icon")
+            var o = ""
+            for (a in 11..15){
+                o+=time.toCharArray()[a]
+
+            }
+            val obj = Hour("https:"+icon, temp, text, o)
+
+            hourList.add(obj)
+
+            adapterHour.notifyDataSetChanged()
+        }
 
     }
 
